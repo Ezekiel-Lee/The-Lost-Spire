@@ -1,0 +1,30 @@
+# Build
+build/
+out/
+*.exe
+*.dll
+*.pdb
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+_deps/
+
+# VS / VSCode
+.vs/
+.vscode/
+*.suo
+*.user
+*.sln
+*.vcxproj
+*.vcxproj.filters
+
+# Assets (대용량 에셋은 Git LFS 권장)
+# assets/fonts/
+# assets/textures/
+
+# OS
+.DS_Store
+Thumbs.db
