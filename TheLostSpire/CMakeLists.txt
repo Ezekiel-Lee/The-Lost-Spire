@@ -19,6 +19,8 @@ add_executable(TheLostSpire
     Game.cpp
     MenuState.cpp
     StateMachine.cpp
+    GameState.cpp
+    Player.cpp
 )
 
 target_include_directories(TheLostSpire PRIVATE ${CMAKE_SOURCE_DIR})
@@ -28,3 +30,4 @@ target_link_libraries(TheLostSpire PRIVATE
     SFML::Window
     SFML::System
 )
+
