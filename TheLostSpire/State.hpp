@@ -15,4 +15,8 @@ public:
 
     virtual void onEnter() {}
     virtual void onExit()  {}
+
+    // true면 이 state가 아래 state를 가리지 않음 (예: 일시정지 오버레이)
+    // StateMachine이 render할 때 이 state 아래까지 함께 그려줌
+    virtual bool isOverlay() const { return false; }
 };

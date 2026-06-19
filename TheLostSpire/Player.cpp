@@ -4,8 +4,8 @@ Player::Player()
     : m_shape({40.f, 60.f})
     , m_velocity(0.f, 0.f)
 {
-    m_shape.setFillColor(sf::Color(255, 100, 100)); // 빨간색으로 변경
-m_shape.setPosition({600.f, 300.f});
+    m_shape.setFillColor(sf::Color(255, 100, 100));
+    m_shape.setPosition({600.f, 300.f});
 }
 
 void Player::handleEvent(const sf::Event& event)
@@ -21,8 +21,10 @@ void Player::handleEvent(const sf::Event& event)
     }
 }
 
-void Player::update(float dt)
+void Player::update(float dt, const std::vector<sf::RectangleShape>& platforms)
 {
+    m_health.update(dt);
+
     if (m_coyoteTimer > 0.f)     m_coyoteTimer    -= dt;
     if (m_jumpBufferTimer > 0.f) m_jumpBufferTimer -= dt;
 
@@ -52,8 +54,18 @@ void Player::update(float dt)
     }
 
     applyGravity(dt);
-    m_shape.move(m_velocity * dt);
-    checkGroundCollision();
+
+    m_shape.move({m_velocity.x * dt, 0.f});
+    m_shape.move({0.f, m_velocity.y * dt});
+
+    checkPlatformCollisions(platforms);
+
+    if (m_shape.getPosition().y > 800.f)
+    {
+        m_health.takeDamage(1);
+        m_shape.setPosition({600.f, 100.f});
+        m_velocity = {0.f, 0.f};
+    }
 }
 
 void Player::applyGravity(float dt)
@@ -62,34 +74,55 @@ void Player::applyGravity(float dt)
         m_velocity.y += GRAVITY * dt;
 }
 
-void Player::checkGroundCollision()
+void Player::checkPlatformCollisions(const std::vector<sf::RectangleShape>& platforms)
 {
-    auto pos = m_shape.getPosition();
+    bool wasOnGround = m_onGround;
+    m_onGround = false;
 
-    if (pos.y + 60.f >= GROUND_Y)
+    sf::FloatRect playerBounds = m_shape.getGlobalBounds();
+
+    for (const auto& platform : platforms)
     {
-        m_shape.setPosition({pos.x, GROUND_Y - 60.f});
-        m_velocity.y = 0.f;
+        sf::FloatRect platBounds = platform.getGlobalBounds();
 
-        if (!m_onGround)
+        if (playerBounds.findIntersection(platBounds))
         {
-            m_jumpCount  = 0;
-            m_coyoteUsed = false;
+            float playerBottom = playerBounds.position.y + playerBounds.size.y;
+            float platTop      = platBounds.position.y;
+
+            if (m_velocity.y >= 0.f && playerBottom - platTop < 20.f)
+            {
+                m_shape.setPosition({m_shape.getPosition().x, platTop - playerBounds.size.y});
+                m_velocity.y = 0.f;
+                m_onGround   = true;
+            }
         }
-
-        m_onGround    = true;
-        m_coyoteTimer = COYOTE_TIME;
     }
-    else
-    {
-        if (m_onGround)
-            m_coyoteTimer = COYOTE_TIME;
 
-        m_onGround = false;
+    if (m_onGround && !wasOnGround)
+    {
+        m_jumpCount  = 0;
+        m_coyoteUsed = false;
+    }
+
+    if (!m_onGround && wasOnGround)
+    {
+        m_coyoteTimer = COYOTE_TIME;
     }
 }
 
 void Player::render(sf::RenderWindow& window)
 {
+    // 무적 상태일 때 깜빡임 효과
+    if (m_health.isInvincible())
+    {
+        int blink = static_cast<int>(m_health.getCurrent() * 1000) % 2;
+        m_shape.setFillColor(blink ? sf::Color(255, 200, 200) : sf::Color(255, 100, 100));
+    }
+    else
+    {
+        m_shape.setFillColor(sf::Color(255, 100, 100));
+    }
+
     window.draw(m_shape);
 }

@@ -4,7 +4,6 @@ project(TheLostSpire VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Audio 비활성화 — FLAC 빌드 오류 우회
 set(SFML_BUILD_AUDIO OFF CACHE BOOL "" FORCE)
 set(SFML_BUILD_NETWORK OFF CACHE BOOL "" FORCE)
 
@@ -20,7 +19,13 @@ add_executable(TheLostSpire
     MenuState.cpp
     StateMachine.cpp
     GameState.cpp
+    PauseState.cpp
+    GameOverState.cpp
     Player.cpp
+    Collectible.cpp
+    Enemy.cpp
+    HealthComponent.cpp
+    LevelData.cpp
 )
 
 target_include_directories(TheLostSpire PRIVATE ${CMAKE_SOURCE_DIR})
@@ -31,3 +36,8 @@ target_link_libraries(TheLostSpire PRIVATE
     SFML::System
 )
 
+add_custom_command(TARGET TheLostSpire POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/assets
+    $<TARGET_FILE_DIR:TheLostSpire>/assets
+)
